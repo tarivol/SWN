@@ -104,13 +104,14 @@ uint8_t get_led_cv_correspondant(uint8_t cvjack_id);
 
 void do_color_test(void)
 {
-	uint8_t lfo_led_no = 0u;
 	uint8_t slider_led_no = 0u;
-	pause_until_button_released();
 	uint16_t r = 0u, g = 0u, b = 1023u, tmp;
 	uint32_t led_err = 0u;
 	uint8_t tick  = 0u;
 	uint32_t led_id;
+	uint32_t bad_bytes;
+
+	//pause_until_button_released();
 
 	uint32_t led_pwm_chip_err = LEDDriver_init_direct(10);
 
@@ -148,6 +149,45 @@ void do_color_test(void)
 
 		HAL_Delay(2000);
 	}
+
+	sFLASH_init();
+	while (sflash_error)
+	{
+		all_sliders_off();
+		HAL_Delay(3000);
+		all_sliders_on();
+		HAL_Delay(3000);
+	}
+
+	//Test first sector before Wavetables
+	bad_bytes = sFLASH_test_sector( sFLASH_get_sector_addr(WT_SECTOR_START - 1) );
+
+	while (bad_bytes)
+	{
+		all_sliders_off();
+		HAL_Delay(1000);
+		all_sliders_on();
+		HAL_Delay(1000);
+		all_sliders_off();
+		HAL_Delay(1000);
+		all_sliders_on();
+		HAL_Delay(3000);
+	} 
+
+	//Test sector after the last Wavetable, before first preset sector
+	bad_bytes =  sFLASH_test_sector( sFLASH_get_sector_addr(PRESET_SECTOR_START - 1) );
+
+	while (bad_bytes)
+	{
+		all_sliders_on();
+		HAL_Delay(1000);
+		all_sliders_off();
+		HAL_Delay(1000);
+		all_sliders_on();
+		HAL_Delay(1000);
+		all_sliders_off();
+		HAL_Delay(3000);
+	} 
 
 	HAL_Delay(5000);
 
