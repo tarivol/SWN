@@ -115,6 +115,12 @@ int main(void)
 	set_gpio_map();
 	init_gpio_pins();
 
+	if (FORCE_COLOR_TEST)
+	{
+		do_color_test();
+		while(1){;}
+	}
+
 	if (key_combo_enter_hardwaretest() || !is_hardwaretest_already_done() || FORCE_HW_TEST)
 	{
 		do_hardware_test();

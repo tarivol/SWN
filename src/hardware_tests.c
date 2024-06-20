@@ -102,6 +102,79 @@ uint8_t get_ordered_led_element_number(uint8_t led_element_number);
 uint8_t get_led_cv_correspondant(uint8_t cvjack_id);
 // void set_env_amplitude(uint8_t chan, uint8_t amp);
 
+void do_color_test(void)
+{
+	uint8_t lfo_led_no = 0u;
+	uint8_t slider_led_no = 0u;
+	pause_until_button_released();
+	uint16_t r = 0u, g = 0u, b = 1023u, tmp;
+	uint32_t led_err = 0u;
+	uint8_t tick  = 0u;
+	uint32_t led_id;
+
+	uint32_t led_pwm_chip_err = LEDDriver_init_direct(10);
+
+	while (led_pwm_chip_err) {
+		mono_led_off(mledm_SLIDER_A);
+		mono_led_off(mledm_SLIDER_B);
+		if ((led_pwm_chip_err >> 4) & 0b0001) mono_led_on(mledm_SLIDER_F); else mono_led_off(mledm_SLIDER_F);
+		if ((led_pwm_chip_err >> 4) & 0b0010) mono_led_on(mledm_SLIDER_E); else mono_led_off(mledm_SLIDER_E);
+		if ((led_pwm_chip_err >> 4) & 0b0100) mono_led_on(mledm_SLIDER_D); else mono_led_off(mledm_SLIDER_D);
+		if ((led_pwm_chip_err >> 4) & 0b1000) mono_led_on(mledm_SLIDER_C); else mono_led_off(mledm_SLIDER_C);
+
+		HAL_Delay(500);
+	}
+
+	for (led_id=0; led_id<NUM_LED_IDs && !led_err; led_id++)
+		led_err = LEDDriver_setRGBLED_RGB(led_id, 1023, 1023, 1023);
+
+	while (led_err)
+	{
+		if (tick == 0u)
+		{
+			if ((led_id >> 4) & 0b0001) mono_led_on(mledm_SLIDER_F); else mono_led_off(mledm_SLIDER_F);
+			if ((led_id >> 4) & 0b0010) mono_led_on(mledm_SLIDER_E); else mono_led_off(mledm_SLIDER_E);
+			if ((led_id >> 4) & 0b0100) mono_led_on(mledm_SLIDER_D); else mono_led_off(mledm_SLIDER_D);
+			if ((led_id >> 4) & 0b1000) mono_led_on(mledm_SLIDER_C); else mono_led_off(mledm_SLIDER_C);
+			if ((led_id >> 4) & 0b1000) mono_led_on(mledm_SLIDER_B); else mono_led_off(mledm_SLIDER_B);
+			if ((led_id >> 4) & 0b1000) mono_led_on(mledm_SLIDER_A); else mono_led_off(mledm_SLIDER_A);
+			tick = 1u;
+		}
+		else
+		{
+			all_sliders_off();
+			tick = 0u;
+		}
+
+		HAL_Delay(2000);
+	}
+
+	HAL_Delay(5000);
+
+	while (1u)
+	{
+		mono_led_off(_WRAP_U8(slider_led_no + 0u, 0u, 6u));
+		mono_led_on(_WRAP_U8(slider_led_no + 1u, 0u, 6u));
+		mono_led_off(_WRAP_U8(slider_led_no + 2u, 0u, 6u));
+		mono_led_on(_WRAP_U8(slider_led_no + 3u, 0u, 6u));
+		mono_led_off(_WRAP_U8(slider_led_no + 4u, 0u, 6u));
+		mono_led_on(_WRAP_U8(slider_led_no + 5u, 0u, 6u));
+		slider_led_no = _WRAP_U8(slider_led_no + 1u, 0u, 6u);
+		
+		
+		for (led_id=0; led_id<NUM_LED_IDs; led_id++)
+		{
+			LEDDriver_setRGBLED_RGB(led_id, r, g, b);
+			tmp = b;
+			b = g;
+			g = r;
+			r = tmp;
+		}
+
+		HAL_Delay(1000u);
+	}
+}
+
 void do_hardware_test(void)
 {
 	pause_until_button_released();

@@ -32,6 +32,7 @@
 #include "switch_driver.h"
 
 #define FORCE_HW_TEST 0
+#define FORCE_COLOR_TEST 1
 
 extern o_rotary 	rotary[NUM_ROTARIES];
 extern o_button 	button[NUM_ROTARIES];
@@ -56,3 +57,4 @@ static inline uint8_t key_combo_reload_factory_spheres(void)
 uint8_t is_hardwaretest_already_done(void);
 void do_hardware_test(void);
 
+void do_color_test(void);
